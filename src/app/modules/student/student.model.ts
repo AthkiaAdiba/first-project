@@ -1,14 +1,12 @@
 import { Schema, model } from 'mongoose';
 import validator from 'validator';
-import bcrypt from 'bcrypt';
 import {
   StudentModel,
   TGuardian,
   TLocalGuardian,
   TStudent,
   TUserName,
-} from './student/student.interface';
-import config from '../config';
+} from './student.interface';
 
 const userNameSchema = new Schema<TUserName>({
   firstName: {
@@ -103,12 +101,11 @@ const studentSchema = new Schema<TStudent, StudentModel>(
       trim: true,
       unique: true,
     },
-    password: {
-      type: String,
-      required: [true, 'password is required.'],
-      trim: true,
+    user: {
+      type: Schema.Types.ObjectId,
+      required: [true, 'user id is required!'],
       unique: true,
-      maxlength: [20, 'password can not be more than 20 characters.'],
+      ref: 'User',
     },
     name: {
       type: userNameSchema,
@@ -174,12 +171,6 @@ const studentSchema = new Schema<TStudent, StudentModel>(
       required: true,
     },
     profileImage: { type: String },
-    isActive: {
-      type: String,
-      trim: true,
-      enum: ['active', 'blocked'],
-      default: 'active',
-    },
     isDeleted: {
       type: Boolean,
       default: false,
@@ -195,29 +186,6 @@ const studentSchema = new Schema<TStudent, StudentModel>(
 // virtual
 studentSchema.virtual('fullName').get(function () {
   return `${this.name.firstName}  ${this.name.secondName}  ${this.name.lastName}`;
-});
-
-// pre save middleware/hook : will work on create() save();
-studentSchema.pre('save', async function (next) {
-  // console.log(this, 'pre hook: we will save data');
-
-  // eslint-disable-next-line @typescript-eslint/no-this-alias
-  const user = this; // document
-  // hashing password and save into DB
-  user.password = await bcrypt.hash(
-    user.password,
-    Number(config.bcrypt_salt_rounds),
-  );
-
-  next();
-});
-
-// post save middleware / hook
-studentSchema.post('save', function (doc, next) {
-  doc.password = '';
-  // console.log('post hook: we saved our data.');
-
-  next();
 });
 
 // creating a custom static method
