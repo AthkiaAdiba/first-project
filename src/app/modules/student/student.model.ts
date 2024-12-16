@@ -97,7 +97,7 @@ const studentSchema = new Schema<TStudent, StudentModel>(
   {
     id: {
       type: String,
-      required: true,
+      required: [true, 'ID is required'],
       trim: true,
       unique: true,
     },
@@ -109,16 +109,16 @@ const studentSchema = new Schema<TStudent, StudentModel>(
     },
     name: {
       type: userNameSchema,
-      required: true,
+      required: [true, 'Name is required'],
     },
     gender: {
       type: String,
       trim: true,
       enum: {
         values: ['male', 'female', 'other'],
-        message: '{VALUE} is not valid',
+        message: '{VALUE} is not valid gender!',
       },
-      required: true,
+      required: [true, 'Gender is required'],
     },
     dateOfBirth: {
       type: Date,
@@ -178,6 +178,10 @@ const studentSchema = new Schema<TStudent, StudentModel>(
     isDeleted: {
       type: Boolean,
       default: false,
+    },
+    academicDepartment: {
+      type: Schema.Types.ObjectId,
+      ref: 'AcademicDepartment',
     },
   },
   {
