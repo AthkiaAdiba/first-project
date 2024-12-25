@@ -12,11 +12,11 @@ import {
 } from './user.utils';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
-import { TFaculty } from '../faculty/faculty.interface';
+import { TFaculty } from '../Faculty/faculty.interface';
 import { AcademicDepartment } from '../academicDepartment/academicDepartment.model';
-import { Faculty } from '../faculty/faculty.model';
-import { TAdmin } from '../admin/admin.interface';
-import { Admin } from '../admin/admin.model';
+import { Faculty } from '../Faculty/faculty.model';
+import { TAdmin } from '../Admin/admin.interface';
+import { Admin } from '../Admin/admin.model';
 
 const createStudentIntoDB = async (password: string, payLoad: TStudent) => {
   // create a user object

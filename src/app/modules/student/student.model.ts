@@ -110,6 +110,7 @@ const studentSchema = new Schema<TStudent, StudentModel>(
     name: {
       type: userNameSchema,
       required: [true, 'Name is required'],
+      trim: true,
     },
     gender: {
       type: String,
@@ -178,6 +179,7 @@ const studentSchema = new Schema<TStudent, StudentModel>(
     isDeleted: {
       type: Boolean,
       default: false,
+      trim: true,
     },
     academicDepartment: {
       type: Schema.Types.ObjectId,

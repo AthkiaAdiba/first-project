@@ -2,13 +2,14 @@ import QueryBuilder from '../../builder/QueryBuilder';
 import AppError from '../../errors/AppError';
 import { AcademicDepartment } from '../academicDepartment/academicDepartment.model';
 import { AcademicFaculty } from '../academicFaculty/academicFaculty.model';
-import { Course } from '../course/course.model';
-import { Faculty } from '../faculty/faculty.model';
+import { Course } from '../Course/course.model';
+import { Faculty } from '../Faculty/faculty.model';
 import { SemesterRegistration } from '../semesterRegistration/semesterRegistration.model';
 import { TOfferedCourse } from './offeredCourse.interface';
 import { OfferedCourse } from './offeredCourse.model';
 import httpStatus from 'http-status';
 import { hasTimeConflict } from './offeredCourse.utils';
+import mongoose from 'mongoose';
 
 const createOfferedCourseIntoDB = async (payLoad: TOfferedCourse) => {
   const {
@@ -222,13 +223,57 @@ const deleteOfferedCourseFromDB = async (id: string) => {
   if (semesterRegistrationStatus?.status !== 'UPCOMING') {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      `Offered course can not update ! because the semester ${semesterRegistrationStatus?.status}`,
+      `Offered course can not be deleted ! because the semester ${semesterRegistrationStatus?.status}`,
     );
   }
 
-  // const result = await OfferedCourse.findByIdAndDelete(id);
+  const session = await mongoose.startSession();
 
-  // return result;
+  if (semesterRegistrationStatus?.status === 'UPCOMING') {
+    try {
+      session.startTransaction();
+
+      const deletedOfferedCourses = await OfferedCourse.deleteMany({
+        semesterRegistration,
+      }).session(session);
+
+      if (deletedOfferedCourses.deletedCount === 0) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'No offered courses found for the specified semester registration!',
+        );
+      }
+
+      const deletedSemesterRegistration =
+        await SemesterRegistration.findByIdAndDelete(
+          semesterRegistration,
+        ).session(session);
+
+      if (!deletedSemesterRegistration) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'Failed to delete Semester Registration!',
+        );
+      }
+
+      await session.commitTransaction();
+      await session.endSession();
+
+      return {
+        message:
+          'Successfully deleted all associated offered courses and semester registration!',
+        deletedOfferedCourses: deletedOfferedCourses.deletedCount,
+      };
+
+      // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      await session.abortTransaction();
+      await session.endSession();
+      throw new Error(
+        'Failed to delete offered courses and semester registration!',
+      );
+    }
+  }
 };
 
 export const OfferedCourseServices = {
