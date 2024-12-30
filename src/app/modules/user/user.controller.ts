@@ -1,7 +1,7 @@
 import { UserServices } from './user.service';
 import sendResponse from '../../utils/sendResponse';
-import httpStatus from 'http-status';
 import catchAsync from '../../utils/catchAsync';
+import httpStatus from 'http-status';
 
 const createStudent = catchAsync(async (req, res) => {
   const { password, student: studentData } = req.body;
@@ -42,8 +42,43 @@ const createAdmin = catchAsync(async (req, res) => {
   });
 });
 
+const getMe = catchAsync(async (req, res) => {
+  // console.log(req.user);
+  // const token = req.headers.authorization;
+
+  // if (!token) {
+  //   throw new AppError(httpStatus.NOT_FOUND, 'Token are not Found!');
+  // }
+
+  const { userId, role } = req.user;
+
+  const result = await UserServices.getMe(userId, role);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'You have got your data!',
+    data: result,
+  });
+});
+
+const changeStatus = catchAsync(async (req, res) => {
+  const id = req.params.id;
+
+  const result = await UserServices.changeStatus(id, req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User status has been changed!',
+    data: result,
+  });
+});
+
 export const UserControllers = {
   createStudent,
   createFaculty,
   createAdmin,
+  getMe,
+  changeStatus,
 };

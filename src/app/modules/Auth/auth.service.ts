@@ -4,9 +4,8 @@ import { User } from '../user/user.model';
 import { TLoginUser } from './auth.interface';
 import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
-import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { createToken } from './auth.utils';
+import { createToken, verifyToken } from './auth.utils';
 import { sendEmail } from '../../utils/sendEmail';
 
 const loginUser = async (payLoad: TLoginUser) => {
@@ -114,10 +113,7 @@ const changePassword = async (
 
 const refreshToken = async (token: string) => {
   // check if the token is valid
-  const decoded = jwt.verify(
-    token,
-    config.jwt_refresh_secret as string,
-  ) as JwtPayload;
+  const decoded = verifyToken(token, config.jwt_refresh_secret as string);
 
   const { userId, iat } = decoded;
 
@@ -233,10 +229,7 @@ const resetPassword = async (
   }
 
   // check if the token is valid
-  const decoded = jwt.verify(
-    token,
-    config.jwt_access_secret as string,
-  ) as JwtPayload;
+  const decoded = verifyToken(token, config.jwt_access_secret as string);
 
   console.log(decoded);
 
