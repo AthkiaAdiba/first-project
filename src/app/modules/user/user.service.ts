@@ -17,8 +17,14 @@ import { AcademicDepartment } from '../academicDepartment/academicDepartment.mod
 import { Faculty } from '../Faculty/faculty.model';
 import { TAdmin } from '../Admin/admin.interface';
 import { Admin } from '../Admin/admin.model';
+import { sendImageToCloudinary } from '../../utils/sendImageToCloudinary';
 
-const createStudentIntoDB = async (password: string, payLoad: TStudent) => {
+const createStudentIntoDB = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  file: any,
+  password: string,
+  payLoad: TStudent,
+) => {
   // create a user object
   const userData: Partial<TUser> = {};
 
@@ -45,6 +51,12 @@ const createStudentIntoDB = async (password: string, payLoad: TStudent) => {
     // set generated id
     userData.id = await generatedStudentId(admissionSemester);
 
+    const imageName = `${userData?.id}${payLoad?.name?.firstName}`;
+    const path = file.path;
+    // send image to cloudinary
+    const secure_url = await sendImageToCloudinary(imageName, path);
+    console.log(secure_url);
+
     // create a user (transaction-1)
     const newUser = await User.create([userData], { session }); // array
 
@@ -56,6 +68,7 @@ const createStudentIntoDB = async (password: string, payLoad: TStudent) => {
     // set id, _id as user
     payLoad.id = newUser[0].id;
     payLoad.user = newUser[0]._id; //reference _id
+    payLoad.profileImage = secure_url;
 
     // create a student (transaction-2)
     const newStudent = await Student.create([payLoad], { session });
@@ -218,3 +231,39 @@ export const UserServices = {
   getMe,
   changeStatus,
 };
+
+// {
+//   "password": "student1",
+//   "student": {
+//       "name": {
+//           "firstName": "Mr. Student4",
+//           "secondName": "",
+//           "lastName": "good"
+//       },
+//       "gender": "male",
+//       "dateOfBirth": "2000-01-15",
+//       "email": "student4@gmail.com",
+//       "contactNo": "+123",
+//       "emergencyContactNo": "+0987654321",
+//       "bloodGroup": "O+",
+//       "presentAddress": "123 Main Street, Cityville",
+//       "permanentAddress": "456 Elm Street, Townsville",
+//       "guardian": {
+//           "fatherName": "Richard Doe",
+//           "fatherOccupation": "Engineer",
+//           "fatherContactNo": "+1122334455",
+//           "motherName": "Emily Doe",
+//           "motherOccupation": "Teacher",
+//           "motherContactNo": "+5566778899"
+//       },
+//       "localGuardian": {
+//           "name": "Michael Smith",
+//           "occupation": "Lawyer",
+//           "contactNo": "+1029384756",
+//           "address": "789 Pine Street, Metropolis"
+//       },
+//       "admissionSemester": "674d1ca9ea727edd352c0735",
+//       "academicDepartment": "67602c8223873fe501f0a241",
+//       "profileImage": "https://example.com/profile-images/john-doe.jpg"
+//   }
+// }
