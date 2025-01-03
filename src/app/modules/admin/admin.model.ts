@@ -91,6 +91,7 @@ const adminSchema = new Schema<TAdmin, AdminModel>(
     },
     profileImg: {
       type: String,
+      default: '',
     },
     isDeleted: {
       type: Boolean,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose from 'mongoose';
 import config from '../../config';
 import { AcademicSemester } from '../academicSemester/academicSemester.model';
@@ -20,7 +21,6 @@ import { Admin } from '../Admin/admin.model';
 import { sendImageToCloudinary } from '../../utils/sendImageToCloudinary';
 
 const createStudentIntoDB = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   file: any,
   password: string,
   payLoad: TStudent,
@@ -36,26 +36,39 @@ const createStudentIntoDB = async (
   userData.email = payLoad?.email;
 
   // find academic semester info
-  const admissionSemester = await AcademicSemester.findById(
-    payLoad.admissionSemester,
+  const academicSemester = await AcademicSemester.findById(
+    payLoad.academicSemester,
   );
 
-  if (!admissionSemester) {
+  if (!academicSemester) {
     throw new Error('Admission is not found!');
   }
+
+  // find department
+  const academicDepartment = await AcademicDepartment.findById(
+    payLoad?.academicDepartment,
+  );
+
+  if (!academicDepartment) {
+    throw new Error('Academic Department is not found!');
+  }
+
+  payLoad.academicFaculty = academicDepartment?.academicFaculty;
 
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
     // set generated id
-    userData.id = await generatedStudentId(admissionSemester);
+    userData.id = await generatedStudentId(academicSemester);
 
-    const imageName = `${userData?.id}${payLoad?.name?.firstName}`;
-    const path = file.path;
-    // send image to cloudinary
-    const secure_url = await sendImageToCloudinary(imageName, path);
-    console.log(secure_url);
+    if (file) {
+      const imageName = `${userData?.id}${payLoad?.name?.firstName}`;
+      const path = file.path;
+      // send image to cloudinary
+      const secure_url = await sendImageToCloudinary(imageName, path);
+      payLoad.profileImg = secure_url;
+    }
 
     // create a user (transaction-1)
     const newUser = await User.create([userData], { session }); // array
@@ -68,7 +81,6 @@ const createStudentIntoDB = async (
     // set id, _id as user
     payLoad.id = newUser[0].id;
     payLoad.user = newUser[0]._id; //reference _id
-    payLoad.profileImage = secure_url;
 
     // create a student (transaction-2)
     const newStudent = await Student.create([payLoad], { session });
@@ -89,7 +101,11 @@ const createStudentIntoDB = async (
   }
 };
 
-const createFacultyIntoDB = async (password: string, payload: TFaculty) => {
+const createFacultyIntoDB = async (
+  file: any,
+  password: string,
+  payload: TFaculty,
+) => {
   // create a user object
   const userData: Partial<TUser> = {};
 
@@ -109,12 +125,22 @@ const createFacultyIntoDB = async (password: string, payload: TFaculty) => {
     throw new AppError(400, 'Academic department not found');
   }
 
+  payload.academicFaculty = academicDepartment?.academicFaculty;
+
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
     //set  generated id
     userData.id = await generateFacultyId();
+
+    if (file) {
+      const imageName = `${userData.id}${payload?.name?.firstName}`;
+      const path = file?.path;
+      //send image to cloudinary
+      const secure_url = await sendImageToCloudinary(imageName, path);
+      payload.profileImg = secure_url as string;
+    }
 
     // create a user (transaction-1)
     const newUser = await User.create([userData], { session }); // array
@@ -147,7 +173,11 @@ const createFacultyIntoDB = async (password: string, payload: TFaculty) => {
   }
 };
 
-const createAdminIntoDB = async (password: string, payLoad: TAdmin) => {
+const createAdminIntoDB = async (
+  file: any,
+  password: string,
+  payLoad: TAdmin,
+) => {
   // create a admin object
   const userData: Partial<TUser> = {};
 
@@ -165,6 +195,14 @@ const createAdminIntoDB = async (password: string, payLoad: TAdmin) => {
 
     // set generated id
     userData.id = await generateAdminId();
+
+    if (file) {
+      const imageName = `${userData.id}${payLoad?.name?.firstName}`;
+      const path = file?.path;
+      //send image to cloudinary
+      const secure_url = await sendImageToCloudinary(imageName, path);
+      payLoad.profileImg = secure_url as string;
+    }
 
     // create a user
     const newUser = await User.create([userData], { session });
