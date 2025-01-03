@@ -16,12 +16,31 @@ router.post(
   AcademicFacultyControllers.createAcademicFaculty,
 );
 
-router.get('/:facultyId', AcademicFacultyControllers.getSingleAcademicFaculty);
+router.get(
+  '/:facultyId',
+  auth(
+    USER_ROLE.superAdmin,
+    USER_ROLE.admin,
+    USER_ROLE.faculty,
+    USER_ROLE.student,
+  ),
+  AcademicFacultyControllers.getSingleAcademicFaculty,
+);
 
-router.get('/', AcademicFacultyControllers.getAllAcademicFaculties);
+router.get(
+  '/',
+  auth(
+    USER_ROLE.superAdmin,
+    USER_ROLE.admin,
+    USER_ROLE.faculty,
+    USER_ROLE.student,
+  ),
+  AcademicFacultyControllers.getAllAcademicFaculties,
+);
 
 router.patch(
   '/:facultyId',
+  auth(USER_ROLE.superAdmin, USER_ROLE.admin),
   validateRequest(
     AcademicFacultyValidation.updateAcademicFacultyValidationSchema,
   ),

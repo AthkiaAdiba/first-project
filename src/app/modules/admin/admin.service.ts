@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import QueryBuilder from '../../builder/QueryBuilder';
-import { searchableFields } from './admin.constant';
+import { AdminSearchableFields } from './admin.constant';
 import { TAdmin } from './admin.interface';
 import { Admin } from './admin.model';
 import AppError from '../../errors/AppError';
@@ -9,15 +9,18 @@ import { User } from '../user/user.model';
 
 const getAllAdminsFromBD = async (query: Record<string, unknown>) => {
   const adminQuery = new QueryBuilder(Admin.find(), query)
-    .search(searchableFields)
+    .search(AdminSearchableFields)
     .filter()
     .sort()
     .paginate()
     .fields();
 
   const result = await adminQuery.modelQuery;
-
-  return result;
+  const meta = await adminQuery.countTotal();
+  return {
+    result,
+    meta,
+  };
 };
 
 const getSingleAdmin = async (id: string) => {

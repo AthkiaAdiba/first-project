@@ -13,7 +13,7 @@ export const BloodGroup: TBloodGroup[] = [
   'O-',
 ];
 
-export const searchableFields = [
+export const AdminSearchableFields = [
   'email',
   'id',
   'contactNo',
