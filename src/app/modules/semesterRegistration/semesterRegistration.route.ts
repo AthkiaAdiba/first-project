@@ -47,4 +47,10 @@ router.get(
   SemesterRegistrationControllers.getAllSemesterRegistration,
 );
 
+router.delete(
+  '/:id',
+  auth(USER_ROLE.superAdmin, USER_ROLE.admin),
+  SemesterRegistrationControllers.deleteSemesterRegistration,
+);
+
 export const SemesterRegistrationRoutes = router;
