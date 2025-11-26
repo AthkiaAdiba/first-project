@@ -12,7 +12,7 @@ const loginUser = catchAsync(async (req, res) => {
   res.cookie('refreshToken', refreshToken, {
     secure: config.NODE_ENV === 'production',
     httpOnly: true,
-    sameSite: 'none',
+    sameSite: true,
     maxAge: 1000 * 60 * 60 * 24 * 365,
   });
 
@@ -42,6 +42,7 @@ const changePassword = catchAsync(async (req, res) => {
 
 const refreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
+  // console.log(refreshToken);
   const result = await AuthServices.refreshToken(refreshToken);
 
   sendResponse(res, {

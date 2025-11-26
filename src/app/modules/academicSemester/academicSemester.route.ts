@@ -30,10 +30,10 @@ router.get(
 router.get(
   '/',
   auth(
-    USER_ROLE.superAdmin,
+    // USER_ROLE.superAdmin,
     USER_ROLE.admin,
-    USER_ROLE.faculty,
-    USER_ROLE.student,
+    // USER_ROLE.faculty,
+    // USER_ROLE.student,
   ),
   AcademicSemesterControllers.getAllAcademicSemester,
 );

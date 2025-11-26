@@ -109,6 +109,11 @@ const facultySchema = new Schema<TFaculty, FacultyModel>(
   },
 );
 
+// virtual
+facultySchema.virtual('fullName').get(function () {
+  return `${this?.name?.firstName}  ${this?.name?.middleName}  ${this?.name?.lastName}`;
+});
+
 // filter out deleted documents
 facultySchema.pre('find', function (next) {
   this.find({ isDeleted: { $ne: true } });

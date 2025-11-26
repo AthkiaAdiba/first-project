@@ -116,6 +116,7 @@ const refreshToken = async (token: string) => {
   const decoded = verifyToken(token, config.jwt_refresh_secret as string);
 
   const { userId, iat } = decoded;
+  // console.log(decoded);
 
   //   checking if the user is exists
   const user = await User.isUserExistsByCustomId(userId);
@@ -231,7 +232,7 @@ const resetPassword = async (
   // check if the token is valid
   const decoded = verifyToken(token, config.jwt_access_secret as string);
 
-  console.log(decoded);
+  // console.log(decoded);
 
   if (payload?.id !== decoded.userId) {
     throw new AppError(httpStatus.FORBIDDEN, 'You are forbidden!');

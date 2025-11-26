@@ -8,6 +8,7 @@ import QueryBuilder from '../../builder/QueryBuilder';
 import { studentSearchableFields } from './student.constant';
 
 const getAllStudentsFromDB = async (query: Record<string, unknown>) => {
+  // console.log(query);
   // const queryObj = { ...query }; // copy
   // // {email: { $regex : query.searchTerm , $option: i}}
 
@@ -83,12 +84,7 @@ const getAllStudentsFromDB = async (query: Record<string, unknown>) => {
     Student.find()
       .populate('user')
       .populate('academicSemester')
-      .populate({
-        path: 'academicDepartment',
-        populate: {
-          path: 'academicFaculty',
-        },
-      }),
+      .populate('academicDepartment academicFaculty'),
     query,
   )
     .search(studentSearchableFields)
